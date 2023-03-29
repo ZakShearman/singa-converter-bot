@@ -6,6 +6,7 @@ import me.xdrop.fuzzywuzzy.FuzzySearch;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import org.jetbrains.annotations.NotNull;
 import pink.zak.discord.singaconverterbot.cache.BotUserPlaylistCache;
 import pink.zak.discord.singaconverterbot.controller.commands.convert.ConvertCommand;
@@ -14,6 +15,7 @@ import pink.zak.discord.singaconverterbot.model.BotUser;
 import pink.zak.discord.singaconverterbot.repository.BotUserRepository;
 import pink.zak.discord.singaconverterbot.service.SpotifyUserApiService;
 import pink.zak.discord.singaconverterbot.service.TrackConverterService;
+import pink.zak.discord.utils.autoconfig.ButtonRegistryAutoConfiguration;
 import pink.zak.discord.utils.discord.annotations.BotSubCommandComponent;
 import pink.zak.discord.utils.discord.command.AutoCompletable;
 import pink.zak.discord.utils.discord.command.BotSubCommand;
@@ -51,7 +53,7 @@ public class SpotifyPlaylistConvertSub implements BotSubCommand, AutoCompletable
     @SneakyThrows
     @Override
     public void onExecute(@NotNull Member sender, @NotNull SlashCommandInteractionEvent event) {
-        String playlistName = event.getOption("playlist").getAsString();
+        String playlistId = event.getOption("playlist").getAsString();
         Optional<BotUser> optionalBotUser = this.botUserRepository.findById(sender.getIdLong());
         if (optionalBotUser.isEmpty()) {
             event.reply("You need to link your Spotify account first!").setEphemeral(true).queue();
@@ -66,11 +68,11 @@ public class SpotifyPlaylistConvertSub implements BotSubCommand, AutoCompletable
         List<PlaylistSimplified> playlists = this.playlistCache.getCache().get(botUser.getDiscordId(), unused -> this.retrievePlaylists(spotifyApi));
 
         Optional<PlaylistSimplified> optionalPlaylist = playlists.stream()
-                .filter(testPlaylist -> FuzzySearch.ratio(testPlaylist.getName(), playlistName) > 80)
-                .sorted(Comparator.comparingInt(playlistSimplified -> FuzzySearch.ratio(playlistSimplified.getName(), playlistName)))
+                .filter(testPlaylist -> testPlaylist.getId().equals(playlistId))
                 .findFirst();
+
         if (optionalPlaylist.isEmpty()) {
-            event.reply("Could not find a suitable playlist with name %s".formatted(playlistName)).setEphemeral(true).queue();
+            event.reply("Could not find a suitable playlist with name %s".formatted(playlistId)).setEphemeral(true).queue();
             return;
         }
 
@@ -89,7 +91,6 @@ public class SpotifyPlaylistConvertSub implements BotSubCommand, AutoCompletable
             }
         }
 
-
         List<TrackConverterService.SearchResult> convertedTracks = new ArrayList<>();
         PlaylistConvertMenu menu = new PlaylistConvertMenu(this.scheduler, this.buttonRegistry, convertedTracks);
         menu.editInitialInteraction(event.getHook());
@@ -97,7 +98,7 @@ public class SpotifyPlaylistConvertSub implements BotSubCommand, AutoCompletable
         Instant lastEditTime = Instant.now();
         for (int i = 0; i < tracks.size(); i++) {
             Track track = tracks.get(i);
-            System.out.println("Converting track: %s".formatted(track.getName()));
+            System.out.printf("Converting track: %s%n", track.getName());
             try {
                 TrackConverterService.SearchResult searchResult = this.trackConverterService.convertTrack(track).get();
                 if (searchResult != null) convertedTracks.add(searchResult);
@@ -127,20 +128,20 @@ public class SpotifyPlaylistConvertSub implements BotSubCommand, AutoCompletable
         List<PlaylistSimplified> playlists = this.playlistCache.getCache().get(event.getUser().getIdLong(), unused -> this.retrievePlaylists(api));
 
         if (currentInput.isEmpty()) {
-            event.replyChoiceStrings(
+            event.replyChoices(
                     playlists.stream()
                             .limit(25)
-                            .map(PlaylistSimplified::getName)
+                            .map(playlist -> new Command.Choice(playlist.getName(), playlist.getId()))
                             .toList()
             ).queue();
             return;
         }
 
-        event.replyChoiceStrings(playlists.stream()
-                .map(PlaylistSimplified::getName)
-                .sorted((o1, o2) -> FuzzySearch.ratio(currentInput, o2) - FuzzySearch.ratio(currentInput, o1))
-                .filter(name -> FuzzySearch.ratio(currentInput, name) > Math.min(32, currentInput.length() * 6))
+        event.replyChoices(playlists.stream()
+                .sorted((o1, o2) -> FuzzySearch.ratio(currentInput, o2.getName()) - FuzzySearch.ratio(currentInput, o1.getName()))
+                .filter(name -> FuzzySearch.ratio(currentInput, name.getName()) > Math.min(32, currentInput.length() * 6))
                 .limit(25)
+                .map(playlist -> new Command.Choice(playlist.getName(), playlist.getId()))
                 .toList()).queue();
     }
 

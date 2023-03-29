@@ -34,7 +34,6 @@ public class SpotifyUserApiService {
                     .setRefreshToken(user.getSpotifyRefreshToken())
                     .build();
 
-
             try {
                 AuthorizationCodeCredentials credentials = userApi.authorizationCodeRefresh().build().execute();
                 userApi.setAccessToken(credentials.getAccessToken());

@@ -27,7 +27,7 @@ public class ConvertCommand implements BotCommand {
                                 "spotify", "Convert your Spotify tracks and playlists to Singa"
                         ).addSubcommands(
                                 new SubcommandData("track", "Convert a Spotify track to Singa")
-                                        .addOption(OptionType.STRING, "track", "The Spotify track to convert", true)
+                                        .addOption(OptionType.STRING, "track", "The Spotify track ID to convert", true)
                         ).addSubcommands(
                                 new SubcommandData("playlist", "Convert a Spotify playlist to Singa")
                                         .addOption(OptionType.STRING, "playlist", "The Spotify playlist to convert", true, true)

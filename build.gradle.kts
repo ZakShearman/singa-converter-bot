@@ -1,8 +1,8 @@
 plugins {
     `java-library`
-    id("org.springframework.boot") version "2.7.3"
-    id("io.spring.dependency-management") version "1.0.13.RELEASE"
-    id("io.freefair.lombok") version "6.1.0"
+    id("org.springframework.boot") version "3.0.5"
+    id("io.spring.dependency-management") version "1.1.0"
+    id("io.freefair.lombok") version "8.0.1"
 }
 
 val versionObject = Version(major = "1", minor = "0", revision = "0")
@@ -22,20 +22,21 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.ZakShearman:spring-boot-starter-discord:1.0")
-    implementation("net.dv8tion:JDA:5.0.0-alpha.17")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.1.1")
+    implementation("com.github.ZakShearman:spring-boot-starter-discord:local")
+    implementation("net.dv8tion:JDA:5.0.0-beta.6")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.5")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
 
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.2.0")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:8.0.0")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.data:spring-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.0.6")
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.1.2")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

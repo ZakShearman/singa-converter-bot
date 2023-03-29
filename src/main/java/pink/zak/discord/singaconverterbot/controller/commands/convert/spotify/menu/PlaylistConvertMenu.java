@@ -42,10 +42,10 @@ public class PlaylistConvertMenu extends PageableButtonEmbedMenu {
 
         for (int i = 20 * (page - 1); i < 20 * page && i < this.convertedTracks.size(); i++) {
             TrackConverterService.SearchResult searchResult = this.convertedTracks.get(i);
-            Track track = searchResult.track();
-            SingaSongDto singaSong = searchResult.singaSong();
+            Track track = searchResult.spotifyTrack();
+            SingaSongDto singaSong = searchResult.singaTrack();
 
-            boolean embolden = searchResult.matchRatio() > 60;
+            boolean embolden = searchResult.pipelineResult().match();
 
             if (embolden) descriptionBuilder.append("**");
             descriptionBuilder
@@ -57,14 +57,14 @@ public class PlaylistConvertMenu extends PageableButtonEmbedMenu {
             else
                 descriptionBuilder.append("*No results :|*");
 
-            descriptionBuilder.append(" (").append(searchResult.matchRatio()).append("%)");
+            descriptionBuilder.append(" (").append(searchResult.pipelineResult().matchRatio()).append("/100)");
 
             if (embolden) descriptionBuilder.append("**");
 
             descriptionBuilder.append("\n");
         }
 
-        System.out.println("Description length: %s".formatted(descriptionBuilder.length()));
+        System.out.printf("Description length: %s/%s%n", descriptionBuilder.length(), MessageEmbed.DESCRIPTION_MAX_LENGTH);
         embedBuilder.setDescription(descriptionBuilder);
 
         return embedBuilder.build();

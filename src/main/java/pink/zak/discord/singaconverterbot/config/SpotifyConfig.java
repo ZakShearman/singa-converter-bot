@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import se.michaelthelin.spotify.SpotifyApi;
@@ -16,7 +15,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @ConfigurationProperties("spotify")
-@ConstructorBinding
 @RequiredArgsConstructor
 public class SpotifyConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyConfig.class);
